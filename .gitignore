@@ -3,4 +3,8 @@
 .RData
 .Ruserdata
 
+*.zip 
+
+deprecated/
+
 db_connection.R

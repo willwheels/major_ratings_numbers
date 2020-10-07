@@ -1,31 +1,35 @@
 library(dplyr)
-library(dbplyr)
-library(pool)
-library(lubridate)
+#library(lubridate)
 library(ggplot2)
 
-# print("are you connected to Pulse Secure or in the office?")
-# 
-# source("./sources/db_connection.R")
-# 
-# dbpool <- pool::dbPool(odbc::odbc(),
-#                        dsn = db_connection$connect_name,
-#                        uid = db_connection$user_name,
-#                        pwd = db_connection$password
-# )
-# 
-# 
-# icis_permit <- dplyr::tbl(dbpool, dbplyr::ident_q('idea_icis.icis_permit')) %>%
-#   select(EXTERNAL_PERMIT_NMBR, VERSION_NMBR, PERMIT_TYPE_CODE, ISSUE_DATE,
-#          MAJOR_MINOR_STATUS_FLAG, MAJOR_RATING_NMBR,
-#          TOTAL_DESIGN_FLOW_NMBR, ACTUAL_AVERAGE_FLOW_NMBR) %>%
-#   mutate(MAJOR_MINOR_STATUS_FLAG =
-#            if_else(is.na(MAJOR_MINOR_STATUS_FLAG), "N", MAJOR_MINOR_STATUS_FLAG)) %>%
-#   collect()
 
-#save(icis_permit, file = "icis_permit_internal.Rda")
 
-load("icis_permit_internal.Rda")
+library(dbplyr)
+library(pool)
+
+print("are you connected to Pulse Secure or in the office?")
+
+source("./sources/db_connection.R")
+
+
+dbpool <- pool::dbPool(odbc::odbc(),
+                       dsn = db_connection$connect_name,
+                       uid = db_connection$user_name,
+                       pwd = db_connection$password
+)
+
+
+icis_permit <- dplyr::tbl(dbpool, dbplyr::ident_q('idea_icis.icis_permit')) %>%
+  select(EXTERNAL_PERMIT_NMBR, VERSION_NMBR, PERMIT_TYPE_CODE, ISSUE_DATE,
+         MAJOR_MINOR_STATUS_FLAG, MAJOR_RATING_NMBR,
+         TOTAL_DESIGN_FLOW_NMBR, ACTUAL_AVERAGE_FLOW_NMBR) %>%
+  mutate(MAJOR_MINOR_STATUS_FLAG =
+           if_else(is.na(MAJOR_MINOR_STATUS_FLAG), "N", MAJOR_MINOR_STATUS_FLAG)) %>%
+  collect()
+
+save(icis_permit, file = here::here("data", "major_rating_nums", "R_data_files", "icis_permit_internal.Rda"))
+
+load(here::here("data", "major_rating_nums", "R_data_files", "icis_permit_internal.Rda"))
 
 # test_for_aaron <- icis_permit %>%
 #   group_by(EXTERNAL_PERMIT_NMBR) %>%
@@ -33,6 +37,8 @@ load("icis_permit_internal.Rda")
 #   summarize(num_status = n_distinct(MAJOR_MINOR_STATUS_FLAG))
 
 #get most recent major rating
+
+#write.csv(icis_permit, file =  here::here("data", "major_rating_nums", "other_data_files", "icis permit internal.csv"))
 
 icis_permit_mrat <- icis_permit %>%
   filter(!is.na(MAJOR_RATING_NMBR)) %>%
@@ -79,5 +85,3 @@ ggplot(data = icis_permit_mrat %>% filter(state == "KY", MAJOR_RATING_NMBR > 0, 
   geom_histogram(binwidth = 5) +
   geom_vline(xintercept = 80, linetype = 2) +
   theme_minimal() 
-
-  
