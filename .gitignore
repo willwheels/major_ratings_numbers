@@ -6,5 +6,5 @@
 *.zip 
 
 deprecated/
-
+*.csv
 db_connection.R
